@@ -1,0 +1,814 @@
+/* ======================================================
+   [v_final_absolute_rev8] 별의 길 프로젝트 스타일 시트 (개선 버전)
+   - 코드 정리 및 잠재적 오류 수정
+========================================================= */
+* { box-sizing: border-box; }
+
+html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+}
+
+html {
+    /* 
+      [수정 1] 사용자의 의도에 따라 스크롤 비활성화를 유지합니다.
+      단, 이 방식은 모바일에서 입력창 터치 시 키보드가 올라오면
+      화면 일부가 가려져 스크롤이 불가능한 문제가 발생할 수 있습니다.
+      추후 JavaScript로 입력창 포커스 시 특정 클래스를 추가하여
+      스크롤을 동적으로 제어하는 방식(overflow-y: auto)을 권장합니다.
+    */
+}
+
+body {
+    background-color: #000000;
+    background-image: url('images/background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    color: #f0f0f0;
+    font-family: 'Noto Sans KR', sans-serif;
+}
+
+#game-container {
+    height: 100%; /* dvh를 지원하지 않는 구형 브라우저를 위한 대비책 */
+    height: 100dvh; /* [핵심] 주소창 등을 제외한 실제 보이는 영역의 높이에 맞춤 */
+    transition: opacity 0.5s ease-in-out;
+}
+
+#dynamic-content {
+    min-height: 100%; /* [수정] height 대신 min-height를 사용해 유연성 확보 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    text-align: center;
+    position: relative;
+    overflow-y: auto;
+}
+
+/* 결과 페이지가 로드될 때 #dynamic-content에 추가될 클래스 */
+#dynamic-content.no-scroll-on-result-page {
+    overflow-y: hidden; /* 결과 페이지에서는 스크롤 숨김! */
+}
+
+/* 추가적으로 p 태그의 flex-shrink는 여전히 중요해요 */
+#result-container p {
+    flex-shrink: 1; /* 텍스트가 길 경우 유연하게 줄어들 수 있도록 함 */
+    margin: 0;
+}
+
+/* --- 레이아웃 컨테이너 --- */
+.mission-container, .static-container {
+    width: 100%;
+    display: flex;
+    flex-grow: 1;
+    text-align: center;
+    position: relative;
+    overflow-y: auto;
+    min-height: 0;
+}
+
+.static-container {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.mission-inner-wrapper {
+    margin-top: auto;
+    margin-bottom: auto;
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.mission-vertical-center {
+    justify-content: center;
+}
+
+/* --- 타이포그래피 --- */
+h1,h2,h3 { 
+    color: #ffffff; 
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 1), 0 0 10px rgba(0, 0, 0, 0.7); 
+}
+p,li { color: #f0f0f0; text-shadow: 0 0 6px rgba(0,0,0,0.8); line-height: 1.7; font-size: 1rem; word-break: keep-all; }
+h2, .mission-title { font-size: 1.55rem; }
+.title-page-style h2 { font-size: 1.75rem; line-height: 1.4; word-break: keep-all; }
+.title-page-style p { font-size: 1rem; }
+
+/* --- 전역 컴포넌트 --- */
+.btn-primary, .option-btn {
+    position: relative; display: inline-flex; justify-content: center; align-items: center;
+    background-color: rgba(0, 3, 8, 0.6); border-radius: 20px; border: none;
+    color: white; font-size: 0.9rem; font-weight: bold; text-decoration: none;
+    cursor: pointer; transition: background-color 0.3s, transform 0.2s;
+    padding: 20px 25px;
+    margin-top: 20px; 
+}
+.btn-primary::before, .option-btn::before {
+    content: ''; position: absolute; top: 10px; left: 10px; right: 10px; bottom: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.7); border-radius: 10px; pointer-events: none;
+}
+.btn-primary:not(:disabled):hover, 
+.option-btn:not(:disabled):hover { 
+    background-color: rgba(0, 3, 8, 0.8); 
+    transform: scale(1.02); 
+}
+.btn-primary:not(:disabled):active, 
+.option-btn:not(:disabled):active { 
+    transform: scale(0.98); 
+}
+.btn-primary:disabled,
+.option-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transition: none; /* [최종 수정] disabled 상태가 될 때는 어떤 애니메이션도 하지 않도록 설정 */
+}
+
+.btn-primary { min-width: 150px; }
+.option-btn { width: 90%; max-width: 450px; min-height: 70px; }
+.option-btn + .option-btn { margin-top: 20px; }
+
+/* --- 텍스트 페이드업 애니메이션 --- */
+.fade-up-container [class*="line"] {
+    opacity: 0;
+    display: inline-block;
+}
+.fade-up-container [class*="line"].show {
+    animation: fadeUp 0.8s ease-out forwards;
+}
+@keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ======================================================
+   미션 공통 레이아웃
+========================================================= */
+.mission-header {
+    flex-shrink: 0;
+    margin-bottom: 20px; 
+}
+
+.mission-content {
+    flex-grow: 1;
+    min-height: 0; /* 부모가 작아질 때 같이 작아질 수 있도록 허용 (필수) */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    
+    /* [핵심] 이 컨테이너 내부에서 내용이 넘칠 경우, 여기에 스크롤바를 생성 */
+    overflow-y: auto; 
+}
+
+
+.mission-footer {
+    flex-shrink: 0;
+    padding-top: 15px;
+    margin-top: 20px;
+}
+
+/* ======================================================
+   [최종 아키텍처] 모든 퍼즐 엔진을 위한 단일 표준 CSS
+========================================================= */
+
+/* --- 1. 단순 이미지 퀴즈 페이지를 위한 스타일 (수정 없음) --- */
+.mission-image-wrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 87%;
+    height: 87%;
+    margin: auto;
+    min-height: 0;
+}
+.mission-image-wrapper img {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    width: auto;
+    height: auto;
+}
+
+/* --- 2. 캔버스 퍼즐을 위한 공통 컨테이너 (표준 무대) --- */
+.canvas-wrapper {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    /* 반응형으로 동작하도록 너비는 100%를 유지하되, 너무 커지지 않게 최대 너비 설정 */
+    width: 100%;
+    max-width: 500px; /* 데스크탑 등 큰 화면에서 너무 커지는 것을 방지 */
+
+    /* [핵심] 상호작용을 위한 최소 너비와 높이를 지정합니다. */
+    /* 이 값 이하로는 절대 작아지지 않습니다. */
+    min-width: 300px; 
+    min-height: 300px;
+}
+
+/* --- 3. 컨테이너 안의 배경 이미지 (필요시 사용) --- */
+.canvas-wrapper > img {
+    display: block;
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* --- 4. 컨테이너 안의 캔버스 (위치만 지정) --- */
+/*    - 크기는 전적으로 JS 엔진이 제어합니다. */
+.canvas-wrapper > canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    /* width, height, css-responsive 클래스 모두 제거! */
+}
+
+/* =====================================================
+   [진짜 최종] 스토리 페이지 공통 레이아웃 (수정 완료)
+========================================================= */
+
+.story-content-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    align-self: center;
+}
+
+/* 
+  [수정] !important를 제거하여 다른 margin 규칙이 적용될 수 있도록 합니다.
+  이 코드는 브라우저의 기본 마진을 초기화하는 역할만 합니다.
+*/
+.story-content-wrapper > * {
+    margin: 0; 
+}
+
+/* 1. <p> 태그 바로 뒤에 또 <p> 태그가 올 때의 기본 간격 (좁게) */
+.story-content-wrapper p + p {
+    margin-top: 15px;
+}
+
+/* 2. <h2> 태그 위/아래 간격은 넓게 설정 */
+.story-content-wrapper h2 {
+    margin-bottom: 40px;
+}
+
+/* 3. 버튼(<button>) 위의 간격도 넓게 설정 */
+.story-content-wrapper p + button {
+    margin-top: 30px;
+}
+
+.story-content-wrapper h3 {
+    font-size: 1.4rem;
+}
+
+/* ======================================================
+   [수정 3] 주석 변경: 개별 페이지 & 특수 스타일
+========================================================= */
+
+#psychology-test-container {
+    /* [핵심] 부모인 #dynamic-content가 이미 정렬을 하고 있으므로,
+       여기서는 불필요한 중복 스타일을 모두 제거합니다. */
+    width: 100%;
+    max-width: 500px; /* 콘텐츠의 최대 너비는 유지합니다. */
+
+    /* [수정] 부모의 공간을 꽉 채우도록 height를 100%로 설정합니다. */
+    height: 100%; 
+    
+    /* 내부의 #test-view, #name-input-view 등을 제어하기 위해 
+       flex 구조는 유지해야 합니다. */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+#test-view, #name-input-view {
+    transition: opacity 0.4s ease-out; /* 오직 opacity만 애니메이션합니다. */    
+    opacity: 0;
+    /* [핵심 추가] 브라우저에게 opacity 속성이 변경될 것임을 알려 GPU 가속을 유도합니다. */
+    will-change: opacity;
+}
+
+/* is-visible 클래스가 붙었을 때만 나타납니다. */
+#test-view.is-visible,
+#name-input-view.is-visible {
+    opacity: 1;
+}
+
+
+/* [핵심 추가] 이 클래스가 붙었을 때만 애니메이션이 활성화됩니다. */
+.enable-transition {
+    transition: opacity 0.4s ease-out;
+}
+
+/* is-visible 클래스가 붙었을 때만 나타납니다. */
+#test-view.is-visible,
+#name-input-view.is-visible {
+    opacity: 1;
+}
+
+/* ======================================================
+   [수정] 입력 필드 및 컨트롤 UI 스타일
+========================================================= */
+
+/* --- 1. 기본 입력 필드 스타일 (`mission-input` 클래스 적용) --- */
+.mission-input {
+    position: relative;
+    background-color: rgba(0, 3, 8, 0.6);
+    border-radius: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    color: white;
+    font-size: 1rem;
+    font-family: 'Noto Sans KR', sans-serif;
+    padding: 10px 10px;
+    width: 90%;
+    max-width: 450px;
+    text-align: center;
+    transition: all 0.3s ease;
+    outline: none; /* 포커스 시 기본 아웃라인 제거 */
+}
+
+/* --- 입력 필드 내부의 Placeholder 텍스트 스타일 --- */
+.mission-input::placeholder {
+    color: rgba(255, 255, 255, 0.5);
+    font-weight: 300;
+}
+
+/* --- 입력 필드 포커스 효과 --- */
+.mission-input:focus {
+    background-color: rgba(0, 3, 8, 0.8);
+    border-color: rgba(255, 255, 255, 0.7);
+    /* 미래적인 느낌을 주는 미세한 그림자 효과 */
+    box-shadow: 0 0 15px rgba(0, 191, 255, 0.4), 0 0 5px rgba(0, 191, 255, 0.3) inset;
+}
+
+
+/* --- 2. [개선] 입력 필드와 버튼을 감싸는 레이아웃 스타일 --- */
+/*
+   mission_03.html의 '.mission-controls' 와
+   psychology_test.html의 '#name-input-view' 처럼
+   입력 필드와 버튼을 함께 제어하는 컨테이너에 적용하면 좋습니다.
+*/
+.mission-controls,
+#name-input-view {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 15px; /* 자식 요소(입력창, 버튼 등) 사이의 간격을 15px로 일정하게 유지 */
+    width: 100%;
+}
+
+/* 
+   위의 gap 속성으로 간격을 제어하므로,
+   컨테이너 안의 버튼에 불필요한 상단 마진이 들어가지 않도록 초기화합니다.
+*/
+.mission-controls .btn-primary,
+#name-input-view .btn-primary {
+    margin-top: 0;
+}
+
+/* ======================================================
+   [최종 완성] 심리테스트 결과 페이지 레이아웃
+========================================================= */
+
+/* 이 부분은 마이고미님 초기 코드 + 스크롤 없애기 위한 설정입니다. */
+* { box-sizing: border-box; }
+html, body {
+    margin: 0; padding: 0; width: 100%; height: 100%;
+    /* HTML의 overflow-y는 JS로 제어한다고 가정합니다. */
+    /* JS 적용 안 한 상태라면 여기서 overflow-y: hidden; 시도해보세요 (다른 페이지 영향 고려 필요) */
+}
+
+body {
+    background-color: #000000;
+    background-image: url('images/background.jpg');
+    background-size: cover;
+    background-position: center;
+    background-attachment: fixed;
+    color: #f0f0f0;
+    font-family: 'Noto Sans KR', sans-serif;
+    /* body에도 flex 컨테이너 설정을 주어 화면 전체를 유연하게 만듭니다. */
+    display: flex;
+    flex-direction: column;
+}
+
+#game-container {
+    height: 100%; /* dvh를 지원하지 않는 구형 브라우저를 위한 대비책 */
+    height: 100dvh; /* [핵심] 주소창 등을 제외한 실제 보이는 영역의 높이에 맞춤 */
+    transition: opacity 0.5s ease-in-out;
+    display: flex; /* 자식 요소 유연하게 관리 */
+    flex-direction: column; /* 세로로 배치 */
+    flex-grow: 1; /* body 내에서 남는 공간 모두 차지 */
+    overflow: hidden; /* #game-container에서 스크롤 방지 */
+}
+
+#dynamic-content {
+    /* 기존 설정은 유지하되, 유연성 강조 */
+    flex-grow: 1; /* 남는 공간을 모두 차지 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 20px; /* 여기 패딩은 유지 (콘텐츠와 화면 가장자리 여백) */
+    text-align: center;
+    position: relative;
+    overflow-y: hidden; /* ★★★ 이제 #dynamic-content는 스크롤이 없어야 합니다. */
+    /* JS로 overflow-y: auto; 였다가 hidden; 으로 바꾸는 방식을 썼다면,
+       결과 페이지에서 여기에 .no-scroll-on-result-page 클래스가 붙는다고 가정합니다. */
+}
+
+/* --- 레이아웃 컨테이너 --- */
+.mission-container, .static-container {
+    width: 100%;
+    display: flex;
+    flex-grow: 1;
+    text-align: center;
+    position: relative;
+    min-height: 0;
+
+    /* ★★★★★ [수정 2] static-container는 스크롤이 없고, mission-container만 스크롤을 갖도록 분리합니다. ★★★★★ */
+    overflow-y: hidden; /* .static-container를 위한 기본값 */
+}
+
+/* mission-container에만 스크롤을 적용! */
+.mission-container {
+    overflow-y: auto;
+}
+
+.static-container {
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+/* ======================================================
+   [수정 제안] 심리테스트 결과 페이지 레이아웃 (여백 확보 및 이미지 축소)
+========================================================= */
+#result-container {
+    display: flex;
+    flex-direction: column;
+    
+    /* 1. box-sizing을 추가하고, padding으로 위아래 여백을 직접 만듭니다. */
+    box-sizing: border-box;
+    padding: 3vh 20px; /* 화면 높이의 3%만큼 위아래 여백, 좌우는 20px */
+    
+    height: 100%; /* max-height 대신 height: 100% 사용 */
+    width: 100%;
+    
+    /* justify-content는 제거하고, 이미지의 flex-grow로 공간을 채웁니다. */
+}
+
+/* 2. 제목, 설명은 절대 줄어들지 않도록 보호합니다. */
+#result-container h2,
+#result-container p {
+    flex-shrink: 0; /* 중요: 절대 줄어들지 않도록 설정 */
+    margin: 0;
+    margin-bottom: 1.5vh; /* 요소 사이의 간격 */
+}
+
+/* 3. 이미지를 담고 있는 래퍼가 모든 유연성을 갖도록 합니다. */
+#result-container .mission-image-wrapper {
+    flex-grow: 1;   /* 남는 세로 공간을 모두 차지 (이미지 위쪽 공간 확보) */
+    flex-shrink: 1; /* 공간이 부족하면 가장 먼저, 그리고 유일하게 줄어듦 */
+    min-height: 0;  /* flex-shrink가 제대로 작동하기 위한 필수 속성 */
+    
+    margin-bottom: 2vh; /* 이미지와 버튼 사이의 간격 */
+    
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; /* 이미지가 삐져나가지 않도록 */
+}
+
+/* 이미지 자체의 스타일 (변경 없음) */
+#result-container .mission-image-wrapper img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* 4. 버튼 또한 절대 줄어들지 않도록 보호합니다. */
+#result-container button {
+    flex-shrink: 0; /* 중요: 버튼도 줄어들지 않도록 보호 */
+    min-height: 44px; /* 버튼의 최소 높이를 확보하여 터치가 쉽도록 함 */
+    white-space: nowrap;
+}
+/* ======================================================
+   반응형 스타일 (모바일 화면 최적화)
+========================================================= */
+
+/* 기준점 1: 화면 높이가 750px 이하일 때 (대부분의 모바일 기기) */
+@media (max-height: 750px) {
+    .mission-container, .static-container {
+        width: 100%;
+        padding-top: 25px;
+        padding-bottom: 25px;
+        gap: 15px;
+    }
+    .mission-header {
+        margin-bottom: 0;
+    }
+    .mission-title {
+        font-size: 1.3rem;
+    }
+    .mission-header p {
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+    .mission-footer {
+        padding-top: 0;
+    }
+    .mission-controls .btn-primary {
+        padding-top: 16px;
+        padding-bottom: 16px;
+        font-size: 0.85rem;
+        margin-top: 0;
+    }
+    .btn-primary::before, .option-btn::before {
+        top: 8px;
+        bottom: 8px;
+    }
+}
+
+/* 기준점 2: 화면 높이가 680px 이하로 매우 짧을 때 (가로 모드, 구형 기기) */
+@media (max-height: 680px) {
+    .mission-container, .static-container {
+        padding-top: 20px;
+        padding-bottom: 20px;
+        gap: 10px;
+    }
+    .mission-title {
+        font-size: 1.2rem;
+    }
+    .mission-header p {
+        font-size: 0.8rem;
+        line-height: 1.5;
+    }
+    .mission-controls .btn-primary {
+        padding-top: 14px;
+        padding-bottom: 14px;
+    }
+}
+
+/* ======================================================
+   [최종 최적화] 극한의 화면 크기 대응 스타일
+========================================================= */
+
+/* 기준점 3: 화면 높이가 600px 이하로 극단적으로 짧을 때 (아이폰 SE 실사용 영역 등) */
+@media (max-height: 600px) {
+
+    /* 1. 전체적인 상하 여백과 요소 간 간격을 최소화합니다. */
+    .mission-inner-wrapper {
+        margin-top: auto;
+        margin-bottom: auto;
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+    
+        /* ★★★★★ [수정 3] 이 코드가 없으면 부모의 스크롤이 동작하지 않습니다. ★★★★★ */
+        /* 부모가 작아질 때, 이 래퍼 또한 자신의 콘텐츠보다 작아질 수 있음을 허용합니다. */
+        min-height: 0;
+    }
+
+    /* 2. 제목과 설명 폰트 크기를 미세하게 줄여 공간을 확보합니다. */
+    .mission-title {
+        font-size: 1.1rem;
+    }
+    .mission-header p {
+        font-size: 0.8rem;
+        line-height: 1.5;
+    }
+
+    /* 3. 퍼즐의 최소 높이를 약간만 양보하여 버튼 공간을 만듭니다. */
+    /* 기존 min-height가 있었다면 이 규칙으로 덮어씁니다. */
+    .mission-image-wrapper,
+    .canvas-wrapper {
+        min-height: 240px; /* 조작성을 해치지 않는 선에서 최소 높이를 줄입니다. */
+    }
+    
+    /* 4. 버튼의 높이를 줄여 공간을 확보합니다. */
+    .mission-controls .btn-primary {
+        padding-top: 12px;
+        padding-bottom: 12px;
+        font-size: 0.8rem;
+    }
+}
+
+/* [수정] 심리테스트 결과 페이지의 캐릭터 이미지만 비율을 유지하도록 수정 */
+#result-container .mission-image-wrapper img {
+    /* 기존 width: 100% 스타일을 덮어쓰기 위해 auto로 변경 */
+    width: auto; 
+    
+    /* 컨테이너 크기를 넘지 않도록 최대 너비와 높이 설정 */
+    max-width: 100%;
+    max-height: 100%; /* 세로가 긴 이미지를 위해 높이 제한 추가 */
+
+    /* 비율을 유지하며 컨테이너 안에 맞춤 */
+    object-fit: contain;
+}
+
+/* ======================================================
+   [추가] 전역 힌트 및 모달 UI 스타일
+========================================================= */
+
+.hint-icon-container,
+.memo-icon-container {
+    position: fixed;
+    top: 10px;
+    z-index: 999;
+    width: 44px;
+    height: 44px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.hint-icon-container.show,
+.memo-icon-container.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* 아이콘 개별 위치 */
+.hint-icon-container { right: 10px; }
+.memo-icon-container { right: 50px; }
+
+/* 아이콘 SVG 스타일 */
+.hint-icon-container svg,
+.memo-icon-container svg {
+    width: 24px;
+    height: 24px;
+    stroke: white;
+    filter: drop-shadow(0 1px 3px rgba(0, 0, 0, 0.8));
+}
+
+.hint-count-badge {
+    position: absolute; top: 2px; right: 2px;
+    display: flex; justify-content: center; align-items: center;
+    min-width: 20px; height: 20px;
+    padding: 2px 2px 3px;
+    border-radius: 50%;
+    background-color: #ffffff;
+    color: #000000;
+    border: 1.5px solid rgba(0, 0, 0, 0.15);
+    font-size: 0.75rem; font-weight: bold;
+    line-height: 1;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+}
+.hint-count-badge:empty { display: none; }
+.hint-icon-container.disabled { opacity: 0.4; cursor: not-allowed; }
+
+/* --- 2. 힌트 모달 창 --- */
+.modal-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 1000;
+    background-color: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    opacity: 0;
+    pointer-events: none; 
+    transition: opacity 0.3s ease-in-out;
+}
+
+.modal-container.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#global-modal-container .modal-content {
+    position: relative;
+    background-color: rgba(22, 34, 46, 0.5); 
+    border: none;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    border-radius: 24px;
+    width: 95%;
+    max-width: 400px;
+    padding: 30px 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+
+    transform: translateY(10px) scale(0.98);
+    transition: all 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.modal-container.show .modal-content {
+    transform: translateY(0) scale(1);
+}
+
+#global-modal-container .modal-content::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    left: 10px;
+    right: 10px;
+    bottom: 10px;
+    /* 내부 테두리도 투명도에 맞게 살짝 더 잘 보이도록 수정 */
+    border: 2.0px solid rgba(255, 255, 255, 0.5);
+    border-radius: 16px;
+    pointer-events: none;
+}
+
+#global-modal-container .modal-icon-wrapper {
+    width: 40px;
+    height: 40px;
+    background-color: #ffffff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 15px;
+    margin-bottom: 10px;
+    flex-shrink: 0;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+#global-modal-container .modal-icon-wrapper svg {
+    width: 20px;
+    height: 20px;
+    stroke: #333333;
+}
+
+#global-modal-container .modal-title {
+    color: #ffffff;
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin: 0 0 0 0;
+    letter-spacing: 1px;
+    /* 투명한 배경 위에서 가독성을 높이기 위해 그림자 추가 */
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+#global-modal-container #global-modal-text {
+    padding: 0;
+    font-size: 0.9rem;
+    line-height: 1.7;
+    color: #EAEAEA;
+    text-align: center;
+    word-break: keep-all;
+    font-weight: 400;
+    /* 투명한 배경 위에서 가독성을 높이기 위해 그림자 추가 */
+    text-shadow: 0 1px 4px rgba(0, 0, 0, 0.7);
+}
+
+/* --- 4. 전역 메모 기능 스타일 --- */
+.memo-is-open .memo-icon-container,
+.memo-is-open .hint-icon-container {
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.2s ease-in-out;
+}
+
+#global-memo-layer {
+    position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%;
+    z-index: 1000;
+    background-color: rgba(255, 255, 255, 0.4);
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    pointer-events: none;
+}
+#global-memo-layer.show {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+#memo-canvas {
+    position: absolute; top: 0; left: 0;
+    width: 100%; height: 100%;
+    cursor: crosshair;
+}
+
+.memo-controls-wrapper {
+    position: absolute; top: 15px; right: 15px;
+    z-index: 10;
+    display: flex;
+    background-color: rgba(255, 255, 255, 0.85);
+    border-radius: 25px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+}
+
+.memo-control-btn {
+    width: 48px; height: 48px;
+    display: flex; justify-content: center; align-items: center;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+#memo-close-btn { border-left: 1px solid rgba(0, 0, 0, 0.1); }
+.memo-control-btn:hover { background-color: rgba(0, 0, 0, 0.08); }
+.memo-control-btn svg { stroke: #333333; }

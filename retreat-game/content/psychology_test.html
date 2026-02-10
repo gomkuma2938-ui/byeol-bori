@@ -1,0 +1,26 @@
+<!-- /content/psychology_test.html (디자인/레이아웃 완벽 복원 최종본) -->
+
+<!-- [수정] static-container 대신, 이 화면만을 위한 전용 컨테이너 ID를 사용합니다. -->
+<div id="psychology-test-container">
+
+    <!-- 1. 질문이 표시되는 영역 -->
+    <div id="test-view">
+        <!-- [수정] 리더님의 원래 디자인을 존중하여 폰트 스타일 등을 복원합니다. -->
+        <h2 id="question-title" style="font-family: 'Georgia', serif; font-weight: normal; font-size: 1.5rem;">Question. 01</h2>
+        <p id="question-text" style="font-weight: bold; font-size: 1.2rem; max-width: 800px; margin: 20px auto 30px auto;">질문을 불러오는 중입니다...</p>
+        
+        <div id="options-container">
+            <button class="option-btn" data-type="A">A</button>
+            <button class="option-btn" data-type="B">B</button>
+            <button class="option-btn" data-type="C">C</button>
+        </div>
+    </div>
+
+    <!-- 2. 이름 입력 영역 (기본으로 숨겨져 있음) -->
+    <div id="name-input-view" style="display: none;">
+        <h2 class="mission-title">이 여정에 기록될<br>당신의 이름을 알려주세요.</h2>
+        <input type="text" id="player_name_input" class="mission-input" placeholder="이름을 입력하세요">
+        <button id="submit-name-btn" class="btn-primary">당신은...</button>
+    </div>
+
+</div>
